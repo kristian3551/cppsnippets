@@ -54,23 +54,72 @@ endfunction
 " --------------------  
 
 function! cppsnippets#For(...)
-    exe "normal! ofor(declaration; condition; step) {\n\n}" 
-    normal! 2kfdviw
+    if len(a:000) == 0
+        exe "normal! ofor(declaration; condition; step) {\n\n}" 
+        normal! 2kfdviw
+        return
+    endif
+
+    if len(a:000) == 1 || len(a:000) > 5
+        return
+    endif
+
+    let start = a:000[0]
+    let end = a:000[1]
+    let options = ''
+    let var_name = 'i'
+    let step = 1
+
+    if len(a:000) >= 3
+        if matchstr(a:000[2], "[^-0-9]")
+            echo "Error! Invalid step!"
+            return
+        endif
+        let step = str2nr(a:000[2])
+    endif
+
+    if len(a:000) >= 4
+        let options = a:000[3]
+    endif
+
+    if len(a:000) >= 5
+        let var_name = a:000[4]
+    endif
+
+    let for_cycle = ''
+    let for_cycle = "for(int " .. var_name .. " = " .. start .. "; " .. var_name .. " " .. (options == 'r' ? ">= " : "< ") ..  end .. "; "
+
+    if step == 1
+        let for_cycle = for_cycle .. var_name .. "++"
+    elseif step < 0
+        let for_cycle = for_cycle .. var_name .. "-=" .. -step
+    else
+        let for_cycle = for_cycle .. var_name .. "+=" .. step
+    endif
+
+    let for_cycle = for_cycle .. ") {\n\n}"
+    exe "normal! o" .. for_cycle
+    normal! 2k3wviw
 endfunction
 
 " --------------------  
 
 function! cppsnippets#Init(...)
     let libraries = copy(a:000)
-    if len(libraries) == 0
-        call extend(libraries, ["iostream", "vector", "algorithm"])
-    endif
+    call extend(libraries, ["iostream", "vector", "algorithm"])
+    call uniq(sort(libraries))
+
     normal! ggVGd
+
     for lib in libraries
         normal! G
         exe "normal! i#include <" .. lib .. ">"
         normal! o 
     endfor
+
+    let std_str = 'using namespace std;'
+    exe "normal! i" .. std_str
+    normal! o
     exe "normal! a\n"
     exe "normal! iint main() {\n\n}"
     normal! ki  
