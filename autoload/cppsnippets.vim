@@ -99,7 +99,7 @@ function! cppsnippets#For(...)
 
     let for_cycle = for_cycle .. ") {\n\n}"
     exe "normal! o" .. for_cycle
-    normal! 2k3wviw
+    normal! 2k3w
 endfunction
 
 " --------------------  
