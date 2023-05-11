@@ -1,6 +1,7 @@
 function! cppsnippets#GenFunc()
     let func_name = expand('<cword>')
     let [temp, rest] = split(getline('.'), func_name)
+    " find params
     let balance = 1
     let end = 1
     for chr in rest[1:]
@@ -14,29 +15,77 @@ function! cppsnippets#GenFunc()
         endif
         let end+=1
     endfor
-    let params = split(rest[1:end - 1], ",\s*")
-    let vars = []
-    for param in params
-        let x = search(param .. " *=[^=]") || search(param .. " *(.*)") || search(param .. "\[[0-9]*\]")
-
-        let line = getline(".")
-        let var_type = split(trim(line), " ")[0]
-        let isArray = 0
-        if match(line, "\[") != -1
-            let isArray = 1
+    let params_raw = rest[1:end - 1]
+    let vars_raw = []
+    let curr = []
+    let balance = 0
+    for chr in params_raw
+        if chr == '('
+            let balance += 1
+            call add(curr, chr)
+        elseif chr == ')'
+            let balance -= 1
+            call add(curr, chr)
+        elseif chr == ',' && balance == 0
+            call add(vars_raw, trim(join(curr, "")))
+            let curr = []
+        else
+            call add(curr, chr)
         endif
-        call add(vars, var_type .. " " .. (isArray ? param .. "[]" : param))
     endfor
+    call add(vars_raw, trim(join(curr, "")))
+    let vars = []
+    for var_name in vars_raw
+        let tokens = split(var_name, "(")
+        if len(tokens) > 0
+            let var_name = tokens[0]
+            call add(vars, var_name) 
+        endif
+    endfor
+    " find var types
+    let params = []
+    for var_name in vars
+        let var_type_regex = "[a-zA-Z<>_][a-zA-Z<> _]*"
+        let var_regex = "[a-zA-Z_][a-zA-Z_]*"
+        normal! gg
+        echomsg var_name
+        let temp = search($"{var_type_regex} *{var_name} *= *") || search($"{var_type_regex} {var_name} *;") || search($"{var_type_regex} {var_name}\[[0-9]*\]") || search($"{var_type_regex} {var_name}\(.*\) *;")
+        if temp != 0
+            let tokens = split(trim(getline('.')), " ")    
+            echomsg tokens
+            let var_type = []
+            for token in tokens
+                let idx = match(token, $"{var_name}")
+                if token != '' && idx == -1
+                    call add(var_type, token)
+                elseif token != '' 
+                    break
+                endif
+            endfor
+            let isArray = match(getline('.'), $"{var_name}\[[0-9]*\]") != -1
+            let var_type = join(var_type, " ")
+            let param = $"{var_type} {var_name}" .. (isArray ? "[]" : "")
+            echomsg param
+            call add(params, param)
+            continue
+        endif
+        " let temp = search($"{var_type_regex} \({var_regex}\( = .*, \|, \)\)*{var_name}\(, {var_regex}\)*;")
+    endfor
+    " write in buffer
     call search("int main")
     normal! O
     normal! O
     exe "normal! o\nvoid " .. func_name .. "("
 
-    for param in vars
+    for param in params
         exe "normal! a" .. param .. ", "
     endfor 
-    exe "normal! xxa) {\n\n}"
-    normal! 2kviw
+    if len(params) > 0
+        exe "normal! xxa) {\n\n}"
+    else
+        exe "normal! a) {\n\n}"
+    endif
+    normal! 2k
 endfunction
 
 " --------------------  
@@ -61,6 +110,7 @@ function! cppsnippets#For(...)
     endif
 
     if len(a:000) == 1 || len(a:000) > 5
+        echo "Invalid arguments"
         return
     endif
 
@@ -71,17 +121,19 @@ function! cppsnippets#For(...)
     let step = 1
 
     if len(a:000) >= 3
-        if matchstr(a:000[2], "[^-0-9]")
-            echo "Error! Invalid step!"
-            return
+        let options = a:000[2]
+        if options == "r"
+            let step = -1
         endif
-        let step = str2nr(a:000[2])
     endif
 
     if len(a:000) >= 4
-        let options = a:000[3]
+        if matchstr(a:000[3], "[^-0-9]")
+            echo "Error! Invalid step!"
+            return
+        endif
+        let step = str2nr(a:000[3])
     endif
-
     if len(a:000) >= 5
         let var_name = a:000[4]
     endif
@@ -91,6 +143,8 @@ function! cppsnippets#For(...)
 
     if step == 1
         let for_cycle = for_cycle .. var_name .. "++"
+    elseif step == -1
+        let for_cycle = for_cycle .. var_name .. "--"
     elseif step < 0
         let for_cycle = for_cycle .. var_name .. "-=" .. -step
     else
@@ -103,6 +157,14 @@ function! cppsnippets#For(...)
 endfunction
 
 " --------------------  
+
+function! cppsnippets#Import(...)
+    normal! ma
+    for lib in a:000
+        exe "normal! ggo#include <" .. lib .. ">"
+    endfor
+    normal! `aj
+endfunction
 
 function! cppsnippets#Init(...)
     let libraries = copy(a:000)
@@ -126,8 +188,6 @@ function! cppsnippets#Init(...)
 endfunction
 
 " --------------------  
-let g:scanf_types = {'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%ll', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
-let g:type_keywords = ['unsigned', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
 
 function! cppsnippets#Input()
     let line = getline('.')
@@ -164,4 +224,68 @@ function! cppsnippets#Input()
     let scanf_vars = join(scanf_vars, ", ")
     exe "normal! oscanf(\"" .. scanf_str .. "\", " .. scanf_vars .. ");"
     normal! ^
+endfunction
+
+" -------------------
+
+function! cppsnippets#Binary(...)
+    if len(a:000) < 2 || len(a:000) > 5
+        echo "Error! Invalid arguments"
+        return
+    endif
+    let left = a:000[0]
+    let right = a:000[1]
+    if str2nr(left) > str2nr(right)
+        echo "Error! Invalid range!"
+        return
+    endif
+    let var1 = 'left'
+    let var2 = 'right'
+    let func_name = 'OK'
+    if len(a:000) >= 3
+        let var1 = a:000[2]
+    endif
+    if len(a:000) >= 4
+        let var2 = a:000[3]
+    endif
+    if len(a:000) >= 5
+        let func_name = a:000[4]
+    endif
+    let var_type = ''
+    let right_value = str2nr(right)
+    if right_value >= -2147483648 && right_value <= 2147483647
+        let var_type = 'int'
+    elseif right_value >= 0 && right_value <= 2147483647 * 2
+        let var_type = 'unsigned'
+    else
+        let var_type = 'long long'
+    endif
+    let binary = $"{var_type} {var1} = {left};\n{var_type} {var2} = {right};\n\nwhile({var1} <= {var2}) \{\n{var_type} mid \= {var1} \+ ({var2} \- {var1}) \/ 2;\n\nif({func_name}(mid)) \{\n\n\}\nelse \{\n\n\}\n\}\n" 
+    exe "normal! o" .. binary
+    normal! 7kfu
+endfunction
+
+" -------------------
+
+function! cppsnippets#bfs(...)
+    if len(a:000) < 2
+        echo "Error! Invalid arguments!"
+        return
+    endif
+    let graph = a:000[0]
+    let start = a:000[1]
+    let isVisited = 'isVisited'
+    if len(a:000) >= 3
+        let isVisited = a:000[2]
+    endif
+    normal! ma
+    for lib in ['queue', 'vector']
+        if !search("#include *<" .. lib .. ">")
+            normal! gg
+            exe "normal! o#include <" .. lib .. ">"
+        endif
+    endfor
+    normal! `a
+    let bfs = $"vector<bool> {isVisited}(graph.size(), false);\n{isVisited}[{start}] = true;\nqueue<int> q;\nq.push({start});\nwhile(!q.empty()) \{\nint curr = q.front();\nq.pop();\n\nfor(int adj:graph[curr]) \{\nif(!{isVisited}[adj]) \{\n{isVisited}[adj] = true;\nq.push(adj);\n\}\n\}\n\}\n"
+    exe "normal! o" .. bfs
 endfunction
