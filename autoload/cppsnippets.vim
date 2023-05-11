@@ -1,3 +1,6 @@
+let g:scanf_types = {'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%ll', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
+let g:type_keywords = ['unsigned', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
+
 function! cppsnippets#GenFunc()
     let func_name = expand('<cword>')
     let [temp, rest] = split(getline('.'), func_name)
