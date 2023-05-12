@@ -9,3 +9,6 @@ endif
 exe "nnoremap " .. g:gen_func_mapping .. " :GenFunc<cr>"
 
 exe "nnoremap " .. g:input_mapping .. " :Input<cr>"
+
+exe "vnoremap " .. g:input_mapping .. " :VisualInput<cr>"
+

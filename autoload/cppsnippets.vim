@@ -266,7 +266,7 @@ endfunction
 
 function! cppsnippets#Input()
     let line = getline('.')
-    let vars_raw = split(trim(line)[:-2], "  *")
+    let vars_raw = split(trim(line)[:-2], "\\s\\+")
     let vars = [] 
     let vars_type = []
     let start = 0
@@ -283,12 +283,9 @@ function! cppsnippets#Input()
         echo "There is no such type"
         return
     endif
-    for raw in vars_raw[start:] 
-        let curr_vars = split(raw, " *, *")
-        for curr in curr_vars
-            call add(vars, curr)
-        endfor
-    endfor
+    let vars_raw = join(vars_raw[start:], " ")
+    let vars = split(vars_raw, "\\(\\s*=\\s*[a-zA-Z_0-9]\\+\\)\\?\\s*,\\s*")
+    let vars[len(vars) - 1] = trim(split(vars[len(vars) - 1], "=")[0])
     let scanf_str = []
     let scanf_vars = []
     for curr in vars
@@ -299,6 +296,17 @@ function! cppsnippets#Input()
     let scanf_vars = join(scanf_vars, ", ")
     exe "normal! oscanf(\"" .. scanf_str .. "\", " .. scanf_vars .. ");"
     normal! ^
+endfunction
+
+" -------------------
+
+function! cppsnippets#VisualInput(line1, line2)
+    let index_to_input = a:line1
+    for idx in range(a:line1, a:line2)
+        exe "normal! " .. index_to_input .."gg"
+        exe "Input"
+        let index_to_input += 2
+    endfor
 endfunction
 
 " -------------------

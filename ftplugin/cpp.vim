@@ -10,5 +10,6 @@ command! Input call cppsnippets#Input()
 command! -nargs=* Binary call cppsnippets#Binary(<f-args>)
 command! -nargs=* Bfs call cppsnippets#bfs(<f-args>)
 command! -nargs=* Import call cppsnippets#Import(<f-args>)
+command! -range VisualInput call cppsnippets#VisualInput(<line1>, <line2>)
 
 let g:cppsnippets = 'alright'
