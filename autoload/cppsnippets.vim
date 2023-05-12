@@ -1,10 +1,10 @@
+let g:var_type_regex = "\\(\\w\\+\\s*<.*>\\|\\(signed\\s\\+\\|unsigned\\s\\+\\)\\?\\(bool\\|char\\|int\\|double\\|float\\|unsigned\\|short\\|long\\s\\+long\\|long\\)\\|\\w\\+\\)"
+let g:var_regex = "[a-zA-Z_][a-zA-Z0-9_]*"
 let g:scanf_types = {'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%ll', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
 let g:type_keywords = ['unsigned', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
 
-function! cppsnippets#GenFunc()
-    let func_name = expand('<cword>')
-    let [temp, rest] = split(getline('.'), func_name)
-    " find params
+function! cppsnippets#findParams(rest)
+    let rest = a:rest
     let balance = 1
     let end = 1
     for chr in rest[1:]
@@ -45,36 +45,12 @@ function! cppsnippets#GenFunc()
             call add(vars, var_name) 
         endif
     endfor
-    " find var types
-    let params = []
-    for var_name in vars
-        let var_type_regex = "[a-zA-Z<>_][a-zA-Z<> _]*"
-        let var_regex = "[a-zA-Z_][a-zA-Z_]*"
-        normal! gg
-        echomsg var_name
-        let temp = search($"{var_type_regex} *{var_name} *= *") || search($"{var_type_regex} {var_name} *;") || search($"{var_type_regex} {var_name}\[[0-9]*\]") || search($"{var_type_regex} {var_name}\(.*\) *;")
-        if temp != 0
-            let tokens = split(trim(getline('.')), " ")    
-            echomsg tokens
-            let var_type = []
-            for token in tokens
-                let idx = match(token, $"{var_name}")
-                if token != '' && idx == -1
-                    call add(var_type, token)
-                elseif token != '' 
-                    break
-                endif
-            endfor
-            let isArray = match(getline('.'), $"{var_name}\[[0-9]*\]") != -1
-            let var_type = join(var_type, " ")
-            let param = $"{var_type} {var_name}" .. (isArray ? "[]" : "")
-            echomsg param
-            call add(params, param)
-            continue
-        endif
-        " let temp = search($"{var_type_regex} \({var_regex}\( = .*, \|, \)\)*{var_name}\(, {var_regex}\)*;")
-    endfor
-    " write in buffer
+    return vars
+endfunction
+
+function! cppsnippets#writeFuncInBuffer(func_name, params)
+    let func_name = a:func_name
+    let params = a:params
     call search("int main")
     normal! O
     normal! O
@@ -82,13 +58,109 @@ function! cppsnippets#GenFunc()
 
     for param in params
         exe "normal! a" .. param .. ", "
-    endfor 
+    endfor
     if len(params) > 0
         exe "normal! xxa) {\n\n}"
     else
         exe "normal! a) {\n\n}"
     endif
-    normal! 2k
+    normal! 2kviw
+endfunction
+
+function! cppsnippets#getParam(var_name)
+    let var_name = a:var_name
+    let line = getline('.')
+    let type_search = matchstrpos(line, g:var_type_regex) 
+    let var_type = type_search[0]
+    echomsg matchlist(line, g:var_type_regex)
+    let isArray = match(trim(line), $"{var_name}\\[[0-9]*\\]") != -1
+    let param = $"{var_type} {var_name}" .. (isArray ? "[]" : "")
+    return param
+endfunction
+
+function! cppsnippets#genFuncTests()
+    let var_name = "arr"
+    let initializing_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*=\\s*"
+    let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
+    let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
+    let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*;"
+    let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
+    echomsg matchstrpos("int", g:var_type_regex)
+    echomsg matchstrpos("double", g:var_type_regex)
+    echomsg matchstrpos("unsigned", g:var_type_regex)
+    echomsg matchstrpos("unsigned    long    long", g:var_type_regex)
+    echomsg matchstrpos("vector  <int>", g:var_type_regex)
+    echomsg matchstrpos("Person", g:var_type_regex)
+    echomsg matchstrpos("SomeInt<int, int>", g:var_type_regex)
+    echomsg "--------"
+    echomsg matchstrpos("n", g:var_regex)
+    echomsg matchstrpos("someVarName", g:var_regex)
+    echomsg matchstrpos("arr3", g:var_regex)
+    echomsg matchstrpos("this_is_a_name", g:var_regex)
+    echomsg matchstrpos("r", g:var_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int arr = 5", initializing_regex)
+    echomsg matchstrpos("unsigned int arr = 5", initializing_regex)
+    echomsg matchstrpos("short arr = 5", initializing_regex)
+    echomsg matchstrpos("vector<int> arr = 5", initializing_regex)
+    echomsg matchstrpos("int arr = 5", initializing_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int     arr;", without_init_regex)
+    echomsg matchstrpos("unsigned int      arr;", without_init_regex)
+    echomsg matchstrpos("Person   arr   ;", without_init_regex)
+    echomsg matchstrpos("vector<int> arr;", without_init_regex)
+    echomsg matchstrpos("SomeInt<int, int> arr;", without_init_regex)
+    echomsg "--------"
+    echomsg matchstrpos("vector<int> arr(n)    ;", constr_regex)
+    echomsg matchstrpos("Person arr(name, age);", constr_regex)
+    echomsg matchstrpos("pair<int, int>    arr(n);", constr_regex)
+    echomsg matchstrpos("Automaton arr(n, p, q, r);", constr_regex)
+    echomsg matchstrpos("vector<int> arr();", constr_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int arr[100];", array_regex)
+    echomsg matchstrpos("unsigned int arr[10];", array_regex)
+    echomsg matchstrpos("Person arr[];", array_regex)
+    echomsg matchstrpos("vector<int> arr[1000000];", array_regex)
+    echomsg matchstrpos("SomeInt<int, int> arr[n];", array_regex)
+    echomsg matchstrpos("SomeInt<int, int> arr[length1];", array_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int arr;", chain_regex)
+    echomsg matchstrpos("int m, n, arr, q;", chain_regex)
+    echomsg matchstrpos("long long m = 5, n = 10, q = 5000, arr;", chain_regex)
+    echomsg matchstrpos("int arr;", chain_regex)
+    echomsg matchstrpos("int m, n = 'asdasdasd', arr, q;", chain_regex)
+    echomsg matchstrpos("int m, n, arr, q;", chain_regex)
+endfunction
+
+function! cppsnippets#GenFunc()
+    " call cppsnippets#genFuncTests()
+    let func_name = expand('<cword>')
+    let [temp, rest] = split(getline('.'), func_name)
+    " find params
+    let vars = cppsnippets#findParams(rest)
+    " find var types
+    echomsg vars
+    let params = []
+    for var_name in vars
+        normal! gg
+        let initializing_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*=\\s*"
+        let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
+        let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
+        let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*;"
+    let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
+        let temp = search(initializing_regex) 
+            \ || search(without_init_regex) 
+            \ || search(array_regex) 
+            \ || search(constr_regex) 
+            \ || search(chain_regex)
+        if temp != 0
+            let param = cppsnippets#getParam(var_name)
+            call add(params, param)
+            continue
+        endif
+    endfor
+    " write in buffer
+    call cppsnippets#writeFuncInBuffer(func_name, params)
 endfunction
 
 " --------------------  
