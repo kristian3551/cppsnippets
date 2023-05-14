@@ -2,7 +2,6 @@ let g:var_type_regex = "\\(\\w\\+\\s*<.*>\\|\\(signed\\s\\+\\|unsigned\\s\\+\\)\
 let g:var_regex = "[a-zA-Z_][a-zA-Z0-9_]*"
 let g:scanf_types = {'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%ll', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
 let g:type_keywords = ['unsigned', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
-
 function! cppsnippets#findParams(rest)
     let rest = a:rest
     let balance = 1
@@ -72,7 +71,6 @@ function! cppsnippets#getParam(var_name)
     let line = getline('.')
     let type_search = matchstrpos(line, g:var_type_regex) 
     let var_type = type_search[0]
-    echomsg matchlist(line, g:var_type_regex)
     let isArray = match(trim(line), $"{var_name}\\[[0-9]*\\]") != -1
     let param = $"{var_type} {var_name}" .. (isArray ? "[]" : "")
     return param
@@ -147,7 +145,7 @@ function! cppsnippets#GenFunc()
         let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
         let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
         let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*;"
-    let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
+    let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\s*=.*\\)\\?\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
         let temp = search(initializing_regex) 
             \ || search(without_init_regex) 
             \ || search(array_regex) 
@@ -171,8 +169,16 @@ function! cppsnippets#Fore(...)
     if len(a:000) >= 2
         let options = a:2
     endif
-    exe "normal! ofor(auto" .. (match(options, "m") != -1 ? "& " : " ") .. "x in " .. objName .. ") {\n" .. (match(options, "p") != -1 ? "cout << x << \" \";" : "") .. "\n}\ncout << endl;\n"
-    normal! 4-fxviw
+
+    let fore_snippet =<< trim eval EOF
+    for(auto{(match(options, "m") != -1 ? "&" : "")} x in {objName}) {{
+        {(match(options, "p") != -1 ? "std::cout << x << \" \";" : "")}
+        }}
+    std::cout << endl; 
+
+    EOF
+    exe "normal! o" .. join(fore_snippet, "\n")
+    normal! V4k=
 endfunction
 
 " --------------------  
@@ -214,7 +220,7 @@ function! cppsnippets#For(...)
     endif
 
     let for_cycle = ''
-    let for_cycle = "for(int " .. var_name .. " = " .. start .. "; " .. var_name .. " " .. (options == 'r' ? ">= " : "< ") ..  end .. "; "
+    let for_cycle = $"for(int {var_name} = {start}; {var_name} " .. (options == 'r' ? ">= " : "< ") .. $"{end}; "
 
     if step == 1
         let for_cycle = for_cycle .. var_name .. "++"
@@ -343,12 +349,56 @@ function! cppsnippets#Binary(...)
     else
         let var_type = 'long long'
     endif
-    let binary = $"{var_type} {var1} = {left};\n{var_type} {var2} = {right};\n\nwhile({var1} <= {var2}) \{\n{var_type} mid \= {var1} \+ ({var2} \- {var1}) \/ 2;\n\nif({func_name}(mid)) \{\n\n\}\nelse \{\n\n\}\n\}\n" 
-    exe "normal! o" .. binary
-    normal! 7kfu
+    let binary_snippet =<< trim eval EOF
+{var_type} {var1} = {left};
+{var_type} {var2} = {right};
+while({var1} <= {var2}) {{
+    {var_type} mid = {var1} + ({var2} - {var1}) / 2;
+    if({func_name}(mid)) {{
+
+    }}
+    else {{
+
+    }}
+}}
+
+EOF
+
+    exe "normal! o" .. join(binary_snippet, "\n")
+    " format all snippet lines
+    normal! V11k=
+    " move the cursor to the function name
+    normal! 4jfO
+
 endfunction
 
 " -------------------
+function! cppsnippets#bfsSnippet(graph, start, isVisited)
+    let graph = a:graph
+    let start = a:start
+    let isVisited = a:isVisited
+    let bfs_snippet =<< trim eval EOF
+    vector<bool> {isVisited}({graph}.size(), false);
+{isVisited}[{start}] = true;
+
+queue<int> q;
+q.push({start});
+
+while(!q.empty()) {{
+    int curr = q.front();
+    q.pop();
+
+    for(int adj:graph[curr]) {{
+        if(!{isVisited}[adj]) {{
+            {isVisited}[adj] = true;
+            q.push(adj);
+        }}
+    }}
+}}
+
+EOF
+return join(bfs_snippet, "\n")
+endfunction
 
 function! cppsnippets#bfs(...)
     if len(a:000) < 2
@@ -369,6 +419,7 @@ function! cppsnippets#bfs(...)
         endif
     endfor
     normal! `a
-    let bfs = $"vector<bool> {isVisited}(graph.size(), false);\n{isVisited}[{start}] = true;\nqueue<int> q;\nq.push({start});\nwhile(!q.empty()) \{\nint curr = q.front();\nq.pop();\n\nfor(int adj:graph[curr]) \{\nif(!{isVisited}[adj]) \{\n{isVisited}[adj] = true;\nq.push(adj);\n\}\n\}\n\}\n"
-    exe "normal! o" .. bfs
+    let snippet = cppsnippets#bfsSnippet(graph, start, isVisited)
+    exe "normal! o" .. snippet
+    normal! V17k=
 endfunction
