@@ -11,5 +11,6 @@ command! -buffer -nargs=* Binary call cppsnippets#Binary(<f-args>)
 command! -buffer -nargs=* Bfs call cppsnippets#bfs(<f-args>)
 command! -buffer -nargs=* Import call cppsnippets#Import(<f-args>)
 command! -buffer -range VisualInput call cppsnippets#VisualInput(<line1>, <line2>)
+command! -buffer -nargs=* Dijkstra call cppsnippets#dijkstra(<f-args>)
 
 let g:cppsnippets = 'alright'

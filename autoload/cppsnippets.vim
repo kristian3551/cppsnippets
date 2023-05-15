@@ -171,7 +171,7 @@ function! cppsnippets#Fore(...)
     endif
 
     let fore_snippet =<< trim eval EOF
-    for(auto{(match(options, "m") != -1 ? "&" : "")} x in {objName}) {{
+    for(auto{(match(options, "m") != -1 ? "&" : "")} x : {objName}) {{
         {(match(options, "p") != -1 ? "std::cout << x << \" \";" : "")}
         }}
     std::cout << endl; 
@@ -423,4 +423,46 @@ function! cppsnippets#bfs(...)
     let snippet = cppsnippets#bfsSnippet(graph, start, isVisited)
     exe "normal! o" .. snippet
     normal! V17k=
+endfunction
+
+function! cppsnippets#dijkstra(...)
+    if len(a:000) != 2
+        echomsg "Invalid arguments"
+        return
+    endif
+    let graph = a:000[0]
+    let start = a:000[1]
+    normal! ma
+    for lib in ['queue', 'vector']
+        if !search("#include *<" .. lib .. ">")
+            normal! gg
+            exe "normal! o#include <" .. lib .. ">"
+        endif
+    endfor
+    normal! `a
+
+    let dijkstra_snippet =<< trim eval EOF
+        vector<int> dists = vector<int>({graph}.size(), INT16_MAX);
+        dists[0] = 0;
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> q;
+        q.push({{0, 0}});
+        while(!q.empty()) {{
+           int curr = q.top().second;
+           int dist = q.top().first;
+           q.pop();
+           for(auto edge:{graph}[curr]) {{
+                int weight = edge.second;
+                int adj = edge.first;
+                if(dist + weight < dists[adj]) {{
+                    dists[adj] = dist + weight;
+                    q.push({{dist + weight, adj}});
+                }}
+           }}
+        }}
+
+EOF
+
+exe "normal! o" .. join(dijkstra_snippet, "\n")
+normal! V17k=
+
 endfunction
