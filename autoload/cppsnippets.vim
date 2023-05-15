@@ -466,3 +466,46 @@ exe "normal! o" .. join(dijkstra_snippet, "\n")
 normal! V17k=
 
 endfunction
+
+function! cppsnippets#unionFind(...)
+    normal! mb
+    let name = 'components'
+    if len(a:000) == 1
+        let name = a:000[0]
+    endif
+    normal! ma
+    for lib in ['vector']
+        if !search("#include *<" .. lib .. ">")
+            normal! gg
+            exe "normal! o#include <" .. lib .. ">"
+        endif
+    endfor
+    normal! `a
+    let unionfind_snippet =<< trim eval EOF
+    int getLeader(vector<int>& {name}, int a) {{
+        if({name}[a] == a) return a;
+        return getLeader({name}, {name}[a]);
+    }}
+
+    bool areInSameComponent(vector<int>& {name}, int a, int b) {{
+        return getLeader({name}, a) == getLeader({name}, b);
+    }}
+    void unite(vector<int>& {name}, int a, int b) {{
+        int la = getLeader({name}, a);
+        int lb = b;
+        while(lb != {name}[lb]) {{
+            {name}[lb] = la;
+            lb = {name}[lb];
+        }}
+        {name}[lb] = la;
+    }}
+
+EOF
+
+call search("int main")
+normal! O
+exe "normal! i" .. join(unionfind_snippet, "\n")
+normal! V16k=
+normal! `b
+
+endfunction
