@@ -1,6 +1,6 @@
 let g:var_type_regex = "\\(\\w\\+\\s*<.*>\\|\\(signed\\s\\+\\|unsigned\\s\\+\\)\\?\\(bool\\|char\\|int\\|double\\|float\\|unsigned\\|short\\|long\\s\\+long\\|long\\)\\|\\w\\+\\)"
 let g:var_regex = "[a-zA-Z_][a-zA-Z0-9_]*"
-let g:scanf_types = {'ULL': '%llu', 'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%ll', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
+let g:scanf_types = {'ULL': '%llu', 'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%lli', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
 let g:type_keywords = ['unsigned', 'ULL', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
 function! cppsnippets#findParams(rest)
     let rest = a:rest
@@ -166,15 +166,18 @@ endfunction
 function! cppsnippets#Fore(...)
     let objName = a:1
     let options = ""
+    let var_name = 'x'
+    if len(a:000) >= 3
+        let options = a:000[2]
+    endif
     if len(a:000) >= 2
-        let options = a:2
+        let var_name = a:000[1]
     endif
 
     let fore_snippet =<< trim eval EOF
-    for(auto{(match(options, "m") != -1 ? "&" : "")} x : {objName}) {{
-        {(match(options, "p") != -1 ? "std::cout << x << \" \";" : "")}
+    for(auto{(match(options, "m") != -1 ? "&" : "")} {var_name} : {objName}) {{
+        {(match(options, "p") != -1 ? "std::cout << {var_name} << \" \";" : "")}
         }}
-    std::cout << endl; 
 
     EOF
     exe "normal! o" .. join(fore_snippet, "\n")
