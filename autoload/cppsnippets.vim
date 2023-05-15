@@ -1,7 +1,7 @@
 let g:var_type_regex = "\\(\\w\\+\\s*<.*>\\|\\(signed\\s\\+\\|unsigned\\s\\+\\)\\?\\(bool\\|char\\|int\\|double\\|float\\|unsigned\\|short\\|long\\s\\+long\\|long\\)\\|\\w\\+\\)"
 let g:var_regex = "[a-zA-Z_][a-zA-Z0-9_]*"
-let g:scanf_types = {'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%ll', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
-let g:type_keywords = ['unsigned', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
+let g:scanf_types = {'ULL': '%llu', 'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%ll', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
+let g:type_keywords = ['unsigned', 'ULL', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
 function! cppsnippets#findParams(rest)
     let rest = a:rest
     let balance = 1
@@ -262,6 +262,7 @@ function! cppsnippets#Init(...)
 
     let std_str = 'using namespace std;'
     exe "normal! i" .. std_str
+    exe "normal! ousing ULL = unsigned long long;"
     normal! o
     exe "normal! a\n"
     exe "normal! iint main() {\n\n}"
@@ -355,7 +356,7 @@ function! cppsnippets#Binary(...)
 while({var1} <= {var2}) {{
     {var_type} mid = {var1} + ({var2} - {var1}) / 2;
     if({func_name}(mid)) {{
-
+        
     }}
     else {{
 
