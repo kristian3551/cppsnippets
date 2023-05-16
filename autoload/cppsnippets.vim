@@ -167,18 +167,15 @@ function! cppsnippets#Fore(...)
     let objName = a:1
     let options = ""
     let var_name = 'x'
-    if len(a:000) >= 3
-        let options = a:000[2]
-    endif
     if len(a:000) >= 2
-        let var_name = a:000[1]
+        let options = a:000[1]
     endif
 
     let fore_snippet =<< trim eval EOF
-    for(auto{(match(options, "m") != -1 ? "&" : "")} {var_name} : {objName}) {{
-        {(match(options, "p") != -1 ? "std::cout << {var_name} << \" \";" : "")}
+    for(auto{(match(options, "m") != -1 ? "&" : "")} x : {objName}) {{
+        {(match(options, "p") != -1 ? "cout << x << \" \";" : "")}
         }}
-
+    cout << endl;
     EOF
     exe "normal! o" .. join(fore_snippet, "\n")
     normal! V4k=
@@ -472,35 +469,27 @@ endfunction
 
 function! cppsnippets#unionFind(...)
     normal! mb
-    let name = 'components'
+    let components = 'components'
     if len(a:000) == 1
-        let name = a:000[0]
+        let components = a:000[0]
     endif
     normal! ma
-    for lib in ['vector']
-        if !search("#include *<" .. lib .. ">")
-            normal! gg
-            exe "normal! o#include <" .. lib .. ">"
-        endif
-    endfor
     normal! `a
     let unionfind_snippet =<< trim eval EOF
-    int getLeader(vector<int>& {name}, int a) {{
-        if({name}[a] == a) return a;
-        return getLeader({name}, {name}[a]);
-    }}
-
-    bool areInSameComponent(vector<int>& {name}, int a, int b) {{
-        return getLeader({name}, a) == getLeader({name}, b);
-    }}
-    void unite(vector<int>& {name}, int a, int b) {{
-        int la = getLeader({name}, a);
-        int lb = b;
-        while(lb != {name}[lb]) {{
-            {name}[lb] = la;
-            lb = {name}[lb];
+    int getLeader(vector<int>& {components}, int a) {{
+        if({components}[a] != a) {{
+            {components}[a] = getLeader({components}, {components}[a]);
         }}
-        {name}[lb] = la;
+        return {components}[a];
+    }}
+    
+    bool areInSameComponent(vector<int>& {components}, int a, int b) {{
+        return getLeader({components}, a) == getLeader({components}, b);
+    }}
+    void unite(vector<int>& {components}, int a, int b) {{
+        int la = getLeader({components}, a);
+        int lb = getLeader({components}, b);
+        components[lb] = la;
     }}
 
 EOF
