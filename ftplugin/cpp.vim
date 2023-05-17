@@ -13,5 +13,6 @@ command! -buffer -nargs=* Import call cppsnippets#Import(<f-args>)
 command! -buffer -range VisualInput call cppsnippets#VisualInput(<line1>, <line2>)
 command! -buffer -nargs=* Dijkstra call cppsnippets#dijkstra(<f-args>)
 command! -buffer -nargs=* UnionFind call cppsnippets#unionFind(<f-args>)
+command! -buffer -nargs=* TopSort call cppsnippets#topSort(<f-args>)
 
 let g:cppsnippets = 'alright'

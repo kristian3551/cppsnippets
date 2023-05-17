@@ -175,7 +175,6 @@ function! cppsnippets#Fore(...)
     for(auto{(match(options, "m") != -1 ? "&" : "")} x : {objName}) {{
         {(match(options, "p") != -1 ? "cout << x << \" \";" : "")}
         }}
-    cout << endl;
     EOF
     exe "normal! o" .. join(fore_snippet, "\n")
     normal! V4k=
@@ -379,6 +378,7 @@ function! cppsnippets#bfsSnippet(graph, start, isVisited)
     let start = a:start
     let isVisited = a:isVisited
     let bfs_snippet =<< trim eval EOF
+        /* BFS Algorithm ----- START */
     vector<bool> {isVisited}({graph}.size(), false);
 {isVisited}[{start}] = true;
 
@@ -396,6 +396,7 @@ while(!q.empty()) {{
         }}
     }}
 }}
+/* BFS Algorithm ----- END */
 
 EOF
 return join(bfs_snippet, "\n")
@@ -442,10 +443,11 @@ function! cppsnippets#dijkstra(...)
     normal! `a
 
     let dijkstra_snippet =<< trim eval EOF
+        /* Dijkstra's Algorithm ----- START */
         vector<int> dists = vector<int>({graph}.size(), INT16_MAX);
-        dists[0] = 0;
+        dists[{start}] = 0;
         priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> q;
-        q.push({{0, 0}});
+        q.push({{0, {start}}});
         while(!q.empty()) {{
            int curr = q.top().second;
            int dist = q.top().first;
@@ -459,6 +461,7 @@ function! cppsnippets#dijkstra(...)
                 }}
            }}
         }}
+        /* Dijkstra's Algorithm ----- END */
 
 EOF
 
@@ -476,6 +479,7 @@ function! cppsnippets#unionFind(...)
     normal! ma
     normal! `a
     let unionfind_snippet =<< trim eval EOF
+    /* UnionFind methods ----- START */
     int getLeader(vector<int>& {components}, int a) {{
         if({components}[a] != a) {{
             {components}[a] = getLeader({components}, {components}[a]);
@@ -491,6 +495,7 @@ function! cppsnippets#unionFind(...)
         int lb = getLeader({components}, b);
         components[lb] = la;
     }}
+    /* UnionFind methods ----- END */
 
 EOF
 
@@ -500,4 +505,56 @@ exe "normal! i" .. join(unionfind_snippet, "\n")
 normal! V16k=
 normal! `b
 
+endfunction
+
+function! cppsnippets#topSort(...)
+    if len(a:000) == 0
+        echomsg "Invalid arguments"
+        return
+    endif
+    let graph = a:000[0]
+
+    normal! ma
+    for lib in ['queue', 'vector']
+        if !search("#include *<" .. lib .. ">")
+            normal! gg
+            exe "normal! o#include <" .. lib .. ">"
+        endif
+    endfor
+    normal! `a
+    
+    let kahn_snippet =<< trim eval EOF
+    /* Kahn's algorithm - START */
+    queue<int> q;
+    vector<int> inDegrees({graph}.size(), 0);
+
+    for(int i = 0; i < {graph}.size(); i++) {{
+        for(auto x : {graph}[i]) {{
+            inDegrees[x]++;
+        }}
+    }}
+
+    for(int i = 0; i < n; i++) {{
+        if(inDegrees[i] == 0) {{
+            q.push(i);
+        }}
+    }}
+
+    while(!q.empty()) {{
+        int curr = q.front();
+        q.pop();
+
+        for(auto x : {graph}[curr]) {{
+            inDegrees[x]--;
+            if(inDegrees[x] == 0) {{
+                q.push(x);
+            }}
+        }}
+    }}
+    /* Kahn's Algorithm - END */
+
+    EOF
+
+    exe "normal! o" .. join(kahn_snippet, "\n")
+    normal! V28k=
 endfunction
