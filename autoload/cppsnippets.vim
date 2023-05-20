@@ -207,15 +207,15 @@ function! cppsnippets#For(...)
         endif
     endif
 
-    if len(a:000) >= 4
-        if matchstr(a:000[3], "[^-0-9]")
+    if len(a:000) >= 5
+        if matchstr(a:000[4], "[^-0-9]")
             echo "Error! Invalid step!"
             return
         endif
         let step = str2nr(a:000[3])
     endif
-    if len(a:000) >= 5
-        let var_name = a:000[4]
+    if len(a:000) >= 4
+        let var_name = a:000[3]
     endif
 
     let for_cycle = ''
