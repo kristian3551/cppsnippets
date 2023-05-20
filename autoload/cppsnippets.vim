@@ -389,7 +389,7 @@ while(!q.empty()) {{
     int curr = q.front();
     q.pop();
 
-    for(int adj:graph[curr]) {{
+    for(int adj: {graph}[curr]) {{
         if(!{isVisited}[adj]) {{
             {isVisited}[adj] = true;
             q.push(adj);
