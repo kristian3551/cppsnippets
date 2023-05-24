@@ -93,8 +93,6 @@ Includes lib1 ... libn in file
 #include <iostream>
 ```
 
-+
-
 `:Import queue cmath`
 
 ---->
