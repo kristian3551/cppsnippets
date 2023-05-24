@@ -534,7 +534,7 @@ function! cppsnippets#topSort(...)
         }}
     }}
 
-    for(int i = 0; i < n; i++) {{
+    for(int i = 0; i < {graph}.size(); i++) {{
         if(inDegrees[i] == 0) {{
             q.push(i);
         }}
