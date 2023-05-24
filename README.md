@@ -15,7 +15,7 @@ foo(var1, var2, var3);
 }
 ```
 
------->
+--->
 
 ```
 void foo(int var1, pair<int, int> var2, vector<int> var3) {
@@ -40,7 +40,7 @@ When variables are defined on a single row like for example `unsigned int m = 10
 ```
 unsigned long long m = 10, n = 5, p, q = 15;
 ```
------->
+--->
 ```
 unsigned long long m = 10, n = 5, p, q = 15;
 scanf("%llu %llu %llu %llu %llu", %m, %n, %p, %q);
@@ -53,7 +53,7 @@ Initialize file with template libraries and a `main` function.
 
 `:Init {lib1} {lib2} ... {libn}`
 
------->
+--->
 
 ```
 #include <iostream>
@@ -76,7 +76,7 @@ int main() {
 
 `:Fore arr obj pm`
 
---------------->
+--->
 
 ```
 for(auto& obj : arr) {
@@ -85,15 +85,31 @@ for(auto& obj : arr) {
 std::cout << endl;
 ```
 
-5. *:Import {lib1} ... {libn}*
+5. `:Import {lib1} ... {libn}`
 
 Includes lib1 ... libn in file
 
-6. *:Binary {lowerBound} {upperBound} {leftVarName: default is 'left'} {rightVarName: default is 'right'}? {functionName: default is OK}*
+```
+#include <iostream>
+```
+
++
+
+`:Import queue cmath`
+
+--->
+
+```
+#include <iostream>
+#include <queue>
+#include <cmath>
+```
+
+6. `:Binary {lowerBound} {upperBound} {leftVarName: default is 'left'} {rightVarName: default is 'right'}? {functionName: default is OK}`
 
 Inserts *binary search* snippet where the cursor is positioned.
 
-7. *:For {lowerBound} {upperBound} {options: 'r' or 'f'}? {step: default is 1}*
+7. `:For {lowerBound} {upperBound} {options: 'r' (stands for *reverse*) or 'f' (stands for *forward*)}? {variable name: default is 'i'} {step: default is 1}`
 
 If there are no arguments passed, a simple:
 
@@ -107,6 +123,9 @@ is inserted.
 
 If 'r' is passed as an option, the for loop iterates backwards.
 
-8. *:Bfs | :Dijkstra | :UnionFind {graphName} {startVertex}*
+8. Snippets
+    - `:Bfs {graph name: with type vector<vector<int>> (adjacency list)} {start vertex: integer from 0 to {graph name}.size() - 1}`
+    - `:UnionFind`: inserts *find* and *union* functions above *main* function
+    - `:TopoSort {graph name: with type vector<vector<int>> (adjacency list)} {start vertex: integer from 0 to {graph name}.size() - 1}`: inserts Kahn's algorithm for topological sorting
+    - `:Dijkstra {graph name: with type vector<vector<pair<int, int>>> (adjacency list)} {start vertex: integer from 0 to {graph name}.size() - 1}`
 
-Inserts a snippet for the algorithm. :UnionFind is a snippet for all of the functions needed for the UnionFind data structure.
