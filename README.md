@@ -15,7 +15,7 @@ foo(var1, var2, var3);
 }
 ```
 
---->
+---->
 
 ```
 void foo(int var1, pair<int, int> var2, vector<int> var3) {
@@ -40,7 +40,7 @@ When variables are defined on a single row like for example `unsigned int m = 10
 ```
 unsigned long long m = 10, n = 5, p, q = 15;
 ```
---->
+---->
 ```
 unsigned long long m = 10, n = 5, p, q = 15;
 scanf("%llu %llu %llu %llu %llu", %m, %n, %p, %q);
@@ -53,7 +53,7 @@ Initialize file with template libraries and a `main` function.
 
 `:Init {lib1} {lib2} ... {libn}`
 
---->
+---->
 
 ```
 #include <iostream>
@@ -76,7 +76,7 @@ int main() {
 
 `:Fore arr obj pm`
 
---->
+---->
 
 ```
 for(auto& obj : arr) {
@@ -97,7 +97,7 @@ Includes lib1 ... libn in file
 
 `:Import queue cmath`
 
---->
+---->
 
 ```
 #include <iostream>
