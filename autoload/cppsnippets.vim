@@ -76,60 +76,6 @@ function! cppsnippets#getParam(var_name)
     return param
 endfunction
 
-function! cppsnippets#genFuncTests()
-    let var_name = "arr"
-    let initializing_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*=\\s*"
-    let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
-    let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
-    let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*;"
-    let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
-    echomsg matchstrpos("int", g:var_type_regex)
-    echomsg matchstrpos("double", g:var_type_regex)
-    echomsg matchstrpos("unsigned", g:var_type_regex)
-    echomsg matchstrpos("unsigned    long    long", g:var_type_regex)
-    echomsg matchstrpos("vector  <int>", g:var_type_regex)
-    echomsg matchstrpos("Person", g:var_type_regex)
-    echomsg matchstrpos("SomeInt<int, int>", g:var_type_regex)
-    echomsg "--------"
-    echomsg matchstrpos("n", g:var_regex)
-    echomsg matchstrpos("someVarName", g:var_regex)
-    echomsg matchstrpos("arr3", g:var_regex)
-    echomsg matchstrpos("this_is_a_name", g:var_regex)
-    echomsg matchstrpos("r", g:var_regex)
-    echomsg "--------"
-    echomsg matchstrpos("int arr = 5", initializing_regex)
-    echomsg matchstrpos("unsigned int arr = 5", initializing_regex)
-    echomsg matchstrpos("short arr = 5", initializing_regex)
-    echomsg matchstrpos("vector<int> arr = 5", initializing_regex)
-    echomsg matchstrpos("int arr = 5", initializing_regex)
-    echomsg "--------"
-    echomsg matchstrpos("int     arr;", without_init_regex)
-    echomsg matchstrpos("unsigned int      arr;", without_init_regex)
-    echomsg matchstrpos("Person   arr   ;", without_init_regex)
-    echomsg matchstrpos("vector<int> arr;", without_init_regex)
-    echomsg matchstrpos("SomeInt<int, int> arr;", without_init_regex)
-    echomsg "--------"
-    echomsg matchstrpos("vector<int> arr(n)    ;", constr_regex)
-    echomsg matchstrpos("Person arr(name, age);", constr_regex)
-    echomsg matchstrpos("pair<int, int>    arr(n);", constr_regex)
-    echomsg matchstrpos("Automaton arr(n, p, q, r);", constr_regex)
-    echomsg matchstrpos("vector<int> arr();", constr_regex)
-    echomsg "--------"
-    echomsg matchstrpos("int arr[100];", array_regex)
-    echomsg matchstrpos("unsigned int arr[10];", array_regex)
-    echomsg matchstrpos("Person arr[];", array_regex)
-    echomsg matchstrpos("vector<int> arr[1000000];", array_regex)
-    echomsg matchstrpos("SomeInt<int, int> arr[n];", array_regex)
-    echomsg matchstrpos("SomeInt<int, int> arr[length1];", array_regex)
-    echomsg "--------"
-    echomsg matchstrpos("int arr;", chain_regex)
-    echomsg matchstrpos("int m, n, arr, q;", chain_regex)
-    echomsg matchstrpos("long long m = 5, n = 10, q = 5000, arr;", chain_regex)
-    echomsg matchstrpos("int arr;", chain_regex)
-    echomsg matchstrpos("int m, n = 'asdasdasd', arr, q;", chain_regex)
-    echomsg matchstrpos("int m, n, arr, q;", chain_regex)
-endfunction
-
 function! cppsnippets#GenFunc()
     " call cppsnippets#genFuncTests()
     let func_name = expand('<cword>')
@@ -145,12 +91,12 @@ function! cppsnippets#GenFunc()
         let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
         let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
         let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*;"
-    let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\s*=.*\\)\\?\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
+        let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\s*=.*\\)\\?\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
         let temp = search(initializing_regex) 
-            \ || search(without_init_regex) 
-            \ || search(array_regex) 
-            \ || search(constr_regex) 
-            \ || search(chain_regex)
+                    \ || search(without_init_regex) 
+                    \ || search(array_regex) 
+                    \ || search(constr_regex) 
+                    \ || search(chain_regex)
         if temp != 0
             let param = cppsnippets#getParam(var_name)
             call add(params, param)
@@ -172,9 +118,9 @@ function! cppsnippets#Fore(...)
     endif
 
     let fore_snippet =<< trim eval EOF
-    for(auto{(match(options, "m") != -1 ? "&" : "")} x : {objName}) {{
-        {(match(options, "p") != -1 ? "cout << x << \" \";" : "")}
-        }}
+        for(auto{(match(options, "m") != -1 ? "&" : "")} x : {objName}) {{
+            {(match(options, "p") != -1 ? "cout << x << \" \";" : "")}
+            }}
     EOF
     exe "normal! o" .. join(fore_snippet, "\n")
     normal! V4k=
@@ -350,19 +296,19 @@ function! cppsnippets#Binary(...)
         let var_type = 'long long'
     endif
     let binary_snippet =<< trim eval EOF
-{var_type} {var1} = {left};
-{var_type} {var2} = {right};
-while({var1} <= {var2}) {{
-    {var_type} mid = {var1} + ({var2} - {var1}) / 2;
-    if({func_name}(mid)) {{
-        
-    }}
-    else {{
+    {var_type} {var1} = {left};
+    {var_type} {var2} = {right};
+    while({var1} <= {var2}) {{
+        {var_type} mid = {var1} + ({var2} - {var1}) / 2;
+        if({func_name}(mid)) {{
 
-    }}
-}}
+        }}
+        else {{
 
-EOF
+        }}
+    }}
+
+    EOF
 
     exe "normal! o" .. join(binary_snippet, "\n")
     " format all snippet lines
@@ -378,28 +324,28 @@ function! cppsnippets#bfsSnippet(graph, start, isVisited)
     let start = a:start
     let isVisited = a:isVisited
     let bfs_snippet =<< trim eval EOF
-        /* BFS Algorithm ----- START */
-    vector<bool> {isVisited}({graph}.size(), false);
-{isVisited}[{start}] = true;
+            /* BFS Algorithm ----- START */
+        vector<bool> {isVisited}({graph}.size(), false);
+    {isVisited}[{start}] = true;
 
-queue<int> q;
-q.push({start});
+    queue<int> q;
+    q.push({start});
 
-while(!q.empty()) {{
-    int curr = q.front();
-    q.pop();
+    while(!q.empty()) {{
+        int curr = q.front();
+        q.pop();
 
-    for(int adj: {graph}[curr]) {{
-        if(!{isVisited}[adj]) {{
-            {isVisited}[adj] = true;
-            q.push(adj);
+        for(int adj: {graph}[curr]) {{
+            if(!{isVisited}[adj]) {{
+                {isVisited}[adj] = true;
+                q.push(adj);
+            }}
         }}
     }}
-}}
-/* BFS Algorithm ----- END */
+    /* BFS Algorithm ----- END */
 
-EOF
-return join(bfs_snippet, "\n")
+    EOF
+    return join(bfs_snippet, "\n")
 endfunction
 
 function! cppsnippets#bfs(...)
@@ -463,47 +409,48 @@ function! cppsnippets#dijkstra(...)
         }}
         /* Dijkstra's Algorithm ----- END */
 
-EOF
+    EOF
 
-exe "normal! o" .. join(dijkstra_snippet, "\n")
-normal! V17k=
+    exe "normal! o" .. join(dijkstra_snippet, "\n")
+    normal! V17k=
 
 endfunction
 
 function! cppsnippets#unionFind(...)
+    let old_reg_value = getreg('b')
     normal! mb
     let components = 'components'
     if len(a:000) == 1
         let components = a:000[0]
     endif
-    normal! ma
-    normal! `a
+
     let unionfind_snippet =<< trim eval EOF
-    /* UnionFind methods ----- START */
-    int getLeader(vector<int>& {components}, int a) {{
-        if({components}[a] != a) {{
-            {components}[a] = getLeader({components}, {components}[a]);
+        /* UnionFind methods ----- START */
+        int getLeader(vector<int>& {components}, int a) {{
+            if({components}[a] != a) {{
+                {components}[a] = getLeader({components}, {components}[a]);
+            }}
+            return {components}[a];
         }}
-        return {components}[a];
-    }}
-    
-    bool areInSameComponent(vector<int>& {components}, int a, int b) {{
-        return getLeader({components}, a) == getLeader({components}, b);
-    }}
-    void unite(vector<int>& {components}, int a, int b) {{
-        int la = getLeader({components}, a);
-        int lb = getLeader({components}, b);
-        components[lb] = la;
-    }}
-    /* UnionFind methods ----- END */
 
-EOF
+        bool areInSameComponent(vector<int>& {components}, int a, int b) {{
+            return getLeader({components}, a) == getLeader({components}, b);
+        }}
+        void unite(vector<int>& {components}, int a, int b) {{
+            int la = getLeader({components}, a);
+            int lb = getLeader({components}, b);
+            components[lb] = la;
+        }}
+        /* UnionFind methods ----- END */
 
-call search("int main")
-normal! O
-exe "normal! i" .. join(unionfind_snippet, "\n")
-normal! V16k=
-normal! `b
+    EOF
+
+    call search("int main")
+    normal! O
+    exe "normal! i" .. join(unionfind_snippet, "\n")
+    normal! V16k=
+    normal! `b
+    call setreg('b', old_reg_value)
 
 endfunction
 
@@ -522,39 +469,93 @@ function! cppsnippets#topSort(...)
         endif
     endfor
     normal! `a
-    
+
     let kahn_snippet =<< trim eval EOF
-    /* Kahn's algorithm - START */
-    queue<int> q;
-    vector<int> inDegrees({graph}.size(), 0);
+        /* Kahn's algorithm - START */
+        queue<int> q;
+        vector<int> inDegrees({graph}.size(), 0);
 
-    for(int i = 0; i < {graph}.size(); i++) {{
-        for(auto x : {graph}[i]) {{
-            inDegrees[x]++;
-        }}
-    }}
-
-    for(int i = 0; i < {graph}.size(); i++) {{
-        if(inDegrees[i] == 0) {{
-            q.push(i);
-        }}
-    }}
-
-    while(!q.empty()) {{
-        int curr = q.front();
-        q.pop();
-
-        for(auto x : {graph}[curr]) {{
-            inDegrees[x]--;
-            if(inDegrees[x] == 0) {{
-                q.push(x);
+        for(int i = 0; i < {graph}.size(); i++) {{
+            for(auto x : {graph}[i]) {{
+                inDegrees[x]++;
             }}
         }}
-    }}
-    /* Kahn's Algorithm - END */
+
+        for(int i = 0; i < {graph}.size(); i++) {{
+            if(inDegrees[i] == 0) {{
+                q.push(i);
+            }}
+        }}
+
+        while(!q.empty()) {{
+            int curr = q.front();
+            q.pop();
+
+            for(auto x : {graph}[curr]) {{
+                inDegrees[x]--;
+                if(inDegrees[x] == 0) {{
+                    q.push(x);
+                }}
+            }}
+        }}
+        /* Kahn's Algorithm - END */
 
     EOF
 
     exe "normal! o" .. join(kahn_snippet, "\n")
     normal! V28k=
 endfunction
+function! cppsnippets#genFuncTests()
+    let var_name = "arr"
+    let initializing_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*=\\s*"
+    let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
+    let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
+    let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*;"
+    let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
+    echomsg matchstrpos("int", g:var_type_regex)
+    echomsg matchstrpos("double", g:var_type_regex)
+    echomsg matchstrpos("unsigned", g:var_type_regex)
+    echomsg matchstrpos("unsigned    long    long", g:var_type_regex)
+    echomsg matchstrpos("vector  <int>", g:var_type_regex)
+    echomsg matchstrpos("Person", g:var_type_regex)
+    echomsg matchstrpos("SomeInt<int, int>", g:var_type_regex)
+    echomsg "--------"
+    echomsg matchstrpos("n", g:var_regex)
+    echomsg matchstrpos("someVarName", g:var_regex)
+    echomsg matchstrpos("arr3", g:var_regex)
+    echomsg matchstrpos("this_is_a_name", g:var_regex)
+    echomsg matchstrpos("r", g:var_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int arr = 5", initializing_regex)
+    echomsg matchstrpos("unsigned int arr = 5", initializing_regex)
+    echomsg matchstrpos("short arr = 5", initializing_regex)
+    echomsg matchstrpos("vector<int> arr = 5", initializing_regex)
+    echomsg matchstrpos("int arr = 5", initializing_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int     arr;", without_init_regex)
+    echomsg matchstrpos("unsigned int      arr;", without_init_regex)
+    echomsg matchstrpos("Person   arr   ;", without_init_regex)
+    echomsg matchstrpos("vector<int> arr;", without_init_regex)
+    echomsg matchstrpos("SomeInt<int, int> arr;", without_init_regex)
+    echomsg "--------"
+    echomsg matchstrpos("vector<int> arr(n)    ;", constr_regex)
+    echomsg matchstrpos("Person arr(name, age);", constr_regex)
+    echomsg matchstrpos("pair<int, int>    arr(n);", constr_regex)
+    echomsg matchstrpos("Automaton arr(n, p, q, r);", constr_regex)
+    echomsg matchstrpos("vector<int> arr();", constr_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int arr[100];", array_regex)
+    echomsg matchstrpos("unsigned int arr[10];", array_regex)
+    echomsg matchstrpos("Person arr[];", array_regex)
+    echomsg matchstrpos("vector<int> arr[1000000];", array_regex)
+    echomsg matchstrpos("SomeInt<int, int> arr[n];", array_regex)
+    echomsg matchstrpos("SomeInt<int, int> arr[length1];", array_regex)
+    echomsg "--------"
+    echomsg matchstrpos("int arr;", chain_regex)
+    echomsg matchstrpos("int m, n, arr, q;", chain_regex)
+    echomsg matchstrpos("long long m = 5, n = 10, q = 5000, arr;", chain_regex)
+    echomsg matchstrpos("int arr;", chain_regex)
+    echomsg matchstrpos("int m, n = 'asdasdasd', arr, q;", chain_regex)
+    echomsg matchstrpos("int m, n, arr, q;", chain_regex)
+endfunction
+
