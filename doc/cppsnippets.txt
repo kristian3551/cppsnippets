@@ -160,7 +160,7 @@ default key binding: gI
 ------------------------------------------------------------------------------
 3.2 BFS
 
-:Bfs <graph name: with type vector<vector<int>> (adjacency list)>
+:Bfs <graph name: with type vector<vector<int>>(adjacency list)>
     <start vertex: integer from 0 to {graph name}.size() - 1>           *:Bfs*
     
 ------------------------------------------------------------------------------
@@ -182,3 +182,5 @@ default key binding: gI
 :TopoSort <graph name: vector<vector<int>> (adjacency list)>       *:TopoSort*
     <start vertex: integer from 0 to {graph name}.size() - 1>
     Inserts Kahn's algorithm for topological sorting.
+
+vim:ft=help
