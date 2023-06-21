@@ -90,7 +90,7 @@ function! cppsnippets#GenFunc()
         let initializing_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*=\\s*"
         let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
         let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
-        let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*;"
+        let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*"
         let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\s*=.*\\)\\?\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
         let temp = search(initializing_regex) 
                     \ || search(without_init_regex) 

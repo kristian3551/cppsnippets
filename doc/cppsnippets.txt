@@ -80,8 +80,8 @@ default key binding: gI
     You can select many rows in visual mode and use the same command to insert 
     individual scanf statements for each of the selected rows. Default key 
     binding is gI, but it can be changed through a variable called
-    g:input_mapping. YOU CAN'T USE THIS COMMAND IN SITUATIONS LIKE 
->    
+    g:input_mapping. YOU CAN'T USE THIS COMMAND IN SITUATIONS LIKE:
+>
         int p; unsigned q;
 <
     YOU CAN USE IT ONLY WHEN VARIABLES OF SAME TYPE ARE DEFINED!!!
@@ -154,7 +154,7 @@ default key binding: gI
 
 :Binary <lowerBound> <upperBound> [<leftVarName: default is 'left'>]
     [<rightVarName: default is 'right'>]? [<functionName: default is OK>]
-                                                                     *:Binary*
+                                                                     *Binary*
     Inserts binary search snippet where the cursor is positioned.
 
 ------------------------------------------------------------------------------
