@@ -1,7 +1,15 @@
-let g:var_type_regex = "\\(\\w\\+\\s*<.*>\\|\\(signed\\s\\+\\|unsigned\\s\\+\\)\\?\\(bool\\|char\\|int\\|double\\|float\\|unsigned\\|short\\|long\\s\\+long\\|long\\)\\|\\w\\+\\)"
+let g:pointer_regex = "\\(\\s*\\*\\+\\)\\?"
+
+let g:var_type_regex = "\\(\\w\\+\\s*<.*>\\|\\(signed\\s\\+\\|unsigned\\s\\+\\)\\?\\(bool\\|char\\|int\\|double\\|float\\|unsigned\\|short\\|long\\s\\+long\\|long\\)\\|\\w\\+\\)" .. g:pointer_regex
+
 let g:var_regex = "[a-zA-Z_][a-zA-Z0-9_]*"
-let g:scanf_types = {'ULL': '%llu', 'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%lli', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%su', 'long double': '%Lf'}
+
+let g:scanf_types = {'ULL': '%llu', 'int': '%d', 'float': '%f', 'double': '%lf', 'long int': '%li','long': '%l', 'long long int': '%lli', 'long long': '%lli', 'unsigned long long': '%llu', 'unsigned long': '%lu', 'unsigned long int': '%lu', 'signed char': '%c', 'unsigned char': '%c', 'char': '%c', 'unsigned int': '%u', 'unsigned': '%u', 'short': '%hd', 'short int': '%hd', 'unsigned short': '%hu', 'long double': '%Lf'}
+
 let g:type_keywords = ['unsigned', 'ULL', 'double', 'long', 'int', 'char', 'float', 'short', 'signed']
+
+" -----------------------------------------
+
 function! cppsnippets#findParams(rest)
     let rest = a:rest
     let balance = 1
@@ -47,6 +55,8 @@ function! cppsnippets#findParams(rest)
     return vars
 endfunction
 
+" --------------------  
+
 function! cppsnippets#writeFuncInBuffer(func_name, params)
     let func_name = a:func_name
     let params = a:params
@@ -66,6 +76,8 @@ function! cppsnippets#writeFuncInBuffer(func_name, params)
     normal! 2kviw
 endfunction
 
+" --------------------  
+
 function! cppsnippets#getParam(var_name)
     let var_name = a:var_name
     let line = getline('.')
@@ -75,6 +87,8 @@ function! cppsnippets#getParam(var_name)
     let param = $"{var_type} {var_name}" .. (isArray ? "[]" : "")
     return param
 endfunction
+
+" --------------------  
 
 function! cppsnippets#GenFunc()
     " call cppsnippets#genFuncTests()
@@ -87,16 +101,14 @@ function! cppsnippets#GenFunc()
     let params = []
     for var_name in vars
         normal! gg
-        let initializing_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*=\\s*"
-        let without_init_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*;"
         let array_regex = $"{g:var_type_regex}\\s\\+{var_name}\[[0-9a-zA-Z_]*\]"
         let constr_regex = $"{g:var_type_regex}\\s\\+{var_name}\\((.*)\\)\\?\\s*"
         let chain_regex = $"{g:var_type_regex}\\s\\+\\({g:var_regex}\\(\\s*,\\s*\\|\\s*=.*,\\s*\\)\\)*{var_name}\\(\\s*=.*\\)\\?\\(\\(\\s*,\\s*\\|\\s*=.*,\\s*\\){g:var_regex}\\)*\\s*;"
-        let temp = search(initializing_regex) 
-                    \ || search(without_init_regex) 
-                    \ || search(array_regex) 
-                    \ || search(constr_regex) 
-                    \ || search(chain_regex)
+
+        let temp = search(chain_regex)
+                      \ || search(constr_regex)
+                      \ || search(array_regex)
+
         if temp != 0
             let param = cppsnippets#getParam(var_name)
             call add(params, param)
@@ -189,7 +201,7 @@ function! cppsnippets#Import(...)
     for lib in a:000
         exe "normal! ggo#include <" .. lib .. ">"
     endfor
-    normal! `aj
+    normal! `a
 endfunction
 
 function! cppsnippets#Init(...)
@@ -319,6 +331,7 @@ function! cppsnippets#Binary(...)
 endfunction
 
 " -------------------
+
 function! cppsnippets#bfsSnippet(graph, start, isVisited)
     let graph = a:graph
     let start = a:start
@@ -348,6 +361,8 @@ function! cppsnippets#bfsSnippet(graph, start, isVisited)
     return join(bfs_snippet, "\n")
 endfunction
 
+" --------------------  
+
 function! cppsnippets#bfs(...)
     if len(a:000) < 2
         echo "Error! Invalid arguments!"
@@ -371,6 +386,8 @@ function! cppsnippets#bfs(...)
     exe "normal! o" .. snippet
     normal! V17k=
 endfunction
+
+" --------------------  
 
 function! cppsnippets#dijkstra(...)
     if len(a:000) != 2
@@ -416,6 +433,8 @@ function! cppsnippets#dijkstra(...)
 
 endfunction
 
+" --------------------  
+
 function! cppsnippets#unionFind(...)
     let old_reg_value = getreg('b')
     normal! mb
@@ -453,6 +472,8 @@ function! cppsnippets#unionFind(...)
     call setreg('b', old_reg_value)
 
 endfunction
+
+" -------------------
 
 function! cppsnippets#topSort(...)
     if len(a:000) == 0
@@ -505,6 +526,9 @@ function! cppsnippets#topSort(...)
     exe "normal! o" .. join(kahn_snippet, "\n")
     normal! V28k=
 endfunction
+
+" -------------------
+
 function! cppsnippets#genFuncTests()
     let var_name = "arr"
     let initializing_regex = $"{g:var_type_regex}\\s\\+{var_name}\\s*=\\s*"
@@ -528,8 +552,13 @@ function! cppsnippets#genFuncTests()
     echomsg "--------"
     echomsg matchstrpos("int arr = 5", initializing_regex)
     echomsg matchstrpos("unsigned int arr = 5", initializing_regex)
+    echomsg matchstrpos("int* arr = &a;", initializing_regex)
+    echomsg matchstrpos("int** arr = &a;", initializing_regex)
+    echomsg matchstrpos("int   *** arr = &a;", initializing_regex)
     echomsg matchstrpos("short arr = 5", initializing_regex)
+    echomsg matchstrpos("short* arr = 5", initializing_regex)
     echomsg matchstrpos("vector<int> arr = 5", initializing_regex)
+    echomsg matchstrpos("vector<int>* arr = 5", initializing_regex)
     echomsg matchstrpos("int arr = 5", initializing_regex)
     echomsg "--------"
     echomsg matchstrpos("int     arr;", without_init_regex)
